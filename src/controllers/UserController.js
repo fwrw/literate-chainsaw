@@ -1,4 +1,4 @@
-const { User, Task } = require("../models");
+const { User, Task, Tag } = require("../models");
 const bcrypt = require("bcrypt");
 
 class UserController {
@@ -102,15 +102,28 @@ class UserController {
         try {
             const { id } = req.params;
 
-            const user = await User.findByPk(id)
+            const user = await User.findByPk(id);
 
             if (!user) {
                 throw new Error("Usuário não encontrado");
             }
 
-            user.tasks = await Task.findAll({ where: { userId: id } });
+            const tasks = await Task.findAll({
+                where: { userId: id },
+                include: [{
+                    model: Tag,
+                    as: 'Tags',
+                    attributes: ['name'],
+                    through: { attributes: [] }
+                }]
+            });
 
-            return res.json(user.tasks);
+            const tasksWithTagNames = tasks.map(task => ({
+                ...task.toJSON(),
+                Tags: task.Tags.map(tag => tag.name)
+            }));
+
+            return res.json(tasksWithTagNames);
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
