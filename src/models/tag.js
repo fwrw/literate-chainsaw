@@ -15,14 +15,33 @@ module.exports = (sequelize, DataTypes) => {
       Tag.belongsTo(models.User, {
         foreignKey: 'userId',
         onDelete: 'CASCADE'
-      })
+      });
+
+      Tag.belongsTo(models.Task, {
+        foreignKey: 'taskId',
+        onDelete: 'CASCADE'
+      });
     }
   }
   Tag.init(
     {
-      name: DataTypes.STRING,
-      color: DataTypes.STRING,
-      userId: DataTypes.INTEGER
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      color: {
+        type: DataTypes.STRING,
+        defaultValue: '#000000'
+      },
+      taskId: { 
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      userId: { 
+        type: DataTypes.INTEGER,
+        allowNull: false
+      }
     }, 
     {
       sequelize,
