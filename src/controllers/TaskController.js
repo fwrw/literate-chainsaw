@@ -24,6 +24,7 @@ class TaskController {
         throw new Error("Falha ao criar task: Usuário não encontrado");
       }
 
+      // Create the task first
       const task = await Task.create({
         title,
         status,
@@ -32,30 +33,32 @@ class TaskController {
         userId,
       });
 
-      const tagInstances = await Promise.all(
-        tags.map(async (tagName) => {
-          const [tag] = await Tag.findOrCreate({
-            where: { name: tagName, userId },
-            defaults: { color: '#000000', userId, taskId: task.id } // Set default color value, userId, and taskId
-          });
-          return tag;
-        })
-      );
-
+      // Create or find the tags and associate them with the task
       if (tags.length > 0) {
-        await task.setTags(tagInstances);
+        const tagInstances = await Promise.all(
+          tags.map(async (tag) => {
+            const [tagInstance] = await Tag.findOrCreate({
+              where: { name: tag.name, userId },
+              defaults: { userId, color: tag.color }
+            });
+            return tagInstance;
+          })
+        );
+
+        await task.addTags(tagInstances.map(tag => tag.id));
       }
 
       return res.status(201).json(task);
     } catch (error) {
-      return res.status(404).json({ error: error.message });
+      console.error('Error creating task:', error);
+      return res.status(500).json({ error: 'Failed to create task' });
     }
   }
 
   async update(req, res) {
     try {
       const { id } = req.params;
-      const { title, status, priority, description, tags } = req.body;
+      const { title, status, priority, description, tags = [] } = req.body;
 
       const task = await Task.findByPk(id);
       if (!task) {
@@ -64,8 +67,31 @@ class TaskController {
 
       await task.update({ title, status, priority, description });
 
-      if (tags) {
-        await task.setTags(tags);
+      // Update tags
+      if (tags.length > 0) {
+        const tagInstances = await Promise.all(
+          tags.map(async (tag) => {
+            // Verifica se a tag já existe
+            const [tagInstance, created] = await Tag.findOrCreate({
+              where: { name: tag.name, userId: task.userId },
+              defaults: { userId: task.userId, color: tag.color || '#000000' }
+            });
+
+            // Se a tag já existia e a cor não foi fornecida, mantém a cor existente
+            if (!created && !tag.color) {
+              tagInstance.color = tagInstance.color; // Mantém a cor existente
+            } else if (tag.color) {
+              tagInstance.color = tag.color; // Atualiza a cor se fornecida
+            }
+
+            await tagInstance.save(); // Salva a tag com a cor correta
+            return tagInstance;
+          })
+        );
+
+        await task.setTags(tagInstances.map(tag => tag.id));
+      } else {
+        await task.setTags([]); // Remove all tags if no tags are provided
       }
 
       return res.json(task);
@@ -76,19 +102,13 @@ class TaskController {
 
   async delete(req, res) {
     try {
-      const { id, UserId } = req.params;
-
-      const user = await User.findByPk(UserId);
-
-      if (!user) {
-        throw new Error("Falha ao deletar task. Usuário não encontrado");
-      }
-
+      const { id } = req.params;
+  
       const task = await Task.findByPk(id);
       if (!task) {
         return res.status(404).json({ error: "Tarefa não encontrada" });
       }
-
+  
       await task.destroy();
       return res.json({ message: "Tarefa deletada com sucesso" });
     } catch (error) {
@@ -107,7 +127,13 @@ class TaskController {
 
       const tasks = await Task.findAll({
         where: { userId },
-        include: [{ model: Tag, through: { attributes: [] } }], // Inclui as tags relacionadas
+        include: [
+          {
+            model: Tag,
+            through: { attributes: [] }, // Não inclui os atributos da tabela de junção
+            attributes: ['id', 'name', 'color'], // Inclui apenas os atributos necessários das tags
+          },
+        ],
       });
 
       if (!tasks.length) {
@@ -141,6 +167,32 @@ class TaskController {
       return res.json(tasks);
     } catch {
       return res.status(500).json({ error: "Erro ao buscar tarefas por tag" });
+    }
+  }
+
+  async changeTaskStatus(req, res) {
+    try {
+      const { id } = req.params;
+
+      const task = await Task.findByPk(id);
+      if (!task) {
+        return res.status(404).json({ error: "Tarefa não encontrada" });
+      }
+
+      if (task.status == 'in progress') {
+        await task.update({ status: 'finished' });
+        return res.json(task);
+      }
+
+      if (task.status == 'finished') {
+        await task.update({ status: 'in progress' });
+        return res.json(task);
+      }
+
+      return res.status(400).json({ error: "Status inválido" });
+      
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao finalizar tarefa" });
     }
   }
 }

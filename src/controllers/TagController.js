@@ -41,8 +41,17 @@ class TagController {
         return res.status(404).json({ error: 'Tag não encontrada' });
       }
 
-      // Atualiza os campos da tag
-      await tag.update({ name, color });
+      // Cria um objeto com os campos a serem atualizados
+      const updateData = {};
+      if (name !== undefined) {
+        updateData.name = name;
+      }
+      if (color !== undefined && color !== '#000000') {
+        updateData.color = color;
+      }
+
+      // Atualiza apenas os campos fornecidos
+      await tag.update(updateData);
       return res.json(tag);
     } catch (error) {
       return res.status(500).json({ error: 'Erro ao atualizar tag' });
@@ -65,6 +74,28 @@ class TagController {
       return res.json({ message: 'Tag deletada com sucesso' });
     } catch (error) {
       return res.status(500).json({ error: 'Erro ao deletar tag' });
+    }
+  }
+
+  async getUserTags(req, res) {
+    const userId = req.session.userId; // Certifique-se de que o userId está sendo obtido corretamente
+
+    
+    if (!userId) {
+      return res.status(403).json({ error: 'Acesso negado' });
+    }
+
+    try {
+      const tags = await Tag.findAll({
+        where: { userId: userId },
+      });
+
+      if (!tags) {
+        return res.status(404).json({ error: 'Tags não encontradas' });
+      }
+      return res.json(tags);
+    } catch (error) {
+      return res.status(500).json({ error: 'Erro ao buscar tags' });
     }
   }
 }

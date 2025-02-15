@@ -6,16 +6,17 @@ module.exports = (sequelize, DataTypes) => {
   class Task extends Model {
 
     static associate(models) {
+      // Relação muitos-para-muitos com Tag através da tabela de junção TaskTag
       Task.belongsToMany(models.Tag, {
         through: 'TaskTag',
         foreignKey: 'taskId',
       });
 
+      // Relação muitos-para-um com User
       Task.belongsTo(models.User, {
         foreignKey: 'userId',
         onDelete: 'CASCADE'
       });
-
     }
   }
   Task.init({

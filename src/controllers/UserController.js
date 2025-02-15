@@ -79,6 +79,31 @@ class UserController {
             return res.status(500).json({ error: error.message });
         }
     }
+
+    async login(req, res) {
+        try {
+            const { username, password } = req.body;
+            const user = await User.findOne({ where: { username } });
+
+            if (!user) {
+                return res.status(401).json({ error: 'Usuário não encontrado' });
+            }
+
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({ error: 'Senha incorreta' });
+            }
+
+            // Set the session
+            req.session.userId = user.id;
+
+            return res.status(200).json({ message: 'Login bem-sucedido' });
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
+
     async delete(req, res) {
         try {
             const { id } = req.params;
@@ -102,6 +127,10 @@ class UserController {
         try {
             const { id } = req.params;
 
+            // if(req.session.userId != id) {
+            //     return res.status(403).json({ error: 'Acesso negado' });
+            // }
+
             const user = await User.findByPk(id);
 
             if (!user) {
@@ -113,20 +142,27 @@ class UserController {
                 include: [{
                     model: Tag,
                     as: 'Tags',
-                    attributes: ['name'],
+                    attributes: ['name', 'color'],
                     through: { attributes: [] }
                 }]
             });
 
             const tasksWithTagNames = tasks.map(task => ({
                 ...task.toJSON(),
-                Tags: task.Tags.map(tag => tag.name)
+                Tags: task.Tags.map(tag => ({ name: tag.name, color: tag.color }))
             }));
 
             return res.json(tasksWithTagNames);
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
+    }
+
+    async getUserById(id) {
+        const user = await User.findByPk(id, {
+            attributes: ['id', 'username']
+        });
+        return user;
     }
 }
 

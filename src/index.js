@@ -1,11 +1,24 @@
 const express = require('express');
+const path = require('path');
+const session = require('express-session');
 const routes = require('./routes');
 const { sequelize } = require('./models');
 
 const app = express();
 
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, '../public')));
+
 // Middleware para permitir o uso de JSON no corpo das requisições
 app.use(express.json());
+
+// Set up session middleware
+app.use(session({
+  secret: 'eitakimassa', // Replace with a strong secret key
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Set to true if using HTTPS
+}));
 
 // Usar as rotas definidas
 app.use(routes);
