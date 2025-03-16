@@ -6,10 +6,10 @@ function App() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    console.log('useEffect called'); // Log para verificar chamadas duplicadas
-    api.get('/tasks')
+    console.log('useEffect called');
+    api.get('/users')
       .then(response => {
-        console.log('API response:', response.data); // Log da resposta completa
+        console.log('API response:', response.data);
         setMessage(response.data.message);
       })
       .catch(error => console.error('Error fetching data:', error));
