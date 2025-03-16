@@ -7,7 +7,7 @@ const UserController = require('./controllers/UserController');
 const isAuthenticated = require('./middleware/auth'); // Ensure this import is correct
 
 // Rotas para Usuários
-router.get('/users', isAuthenticated, UserController.index); // Listar todos os usuários
+router.get('/users', UserController.index); // Listar todos os usuários
 router.post('/users', UserController.store); // Criar um novo usuário
 router.post('/login', UserController.login); // Login de usuário
 router.put('/users/:id', isAuthenticated, UserController.update); // Atualizar um usuário
@@ -15,7 +15,7 @@ router.delete('/delete-account', isAuthenticated, UserController.delete); // Del
 router.patch('/users/:id/password', isAuthenticated, UserController.updatePassword); // Atualizar a senha de um usuário
 
 // Rotas para Tarefas
-router.get('/tasks', isAuthenticated, TaskController.index); // Listar todas as tarefas
+router.get('/tasks', TaskController.index); // Listar todas as tarefas
 router.post('/tasks', TaskController.store); // Criar uma nova tarefa
 router.put('/tasks/:id', isAuthenticated, TaskController.update); // Atualizar uma tarefa
 router.delete('/tasks/:id', isAuthenticated, TaskController.delete); // Deletar uma tarefa
@@ -33,7 +33,7 @@ router.get('/user/tags', isAuthenticated, TagController.getUserTags); // Listar 
 
 
 router.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/login.html'));
+  res.json({ message: 'Login Page' });
 });
 
 router.get('/register', (req, res) => {
@@ -45,7 +45,7 @@ router.get('/', (req, res) => {
   if (req.session.userId) {
     res.redirect(`/users/${req.session.userId}/tasks`);
   } else {
-    res.redirect('/login');
+    res.json({ message: 'Please log in' });
   }
 });
 

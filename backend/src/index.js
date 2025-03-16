@@ -1,10 +1,12 @@
 const express = require('express');
+const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
 const routes = require('./routes');
 const { sequelize } = require('./models');
 
 const app = express();
+app.use(cors());
 
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, '../public')));
