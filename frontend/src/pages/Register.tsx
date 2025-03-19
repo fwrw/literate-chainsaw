@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import api from '../services/api';
+import { Layout } from '../components';
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -16,7 +17,8 @@ const Register = () => {
   };
 
   return (
-    <div>
+    <Layout>
+<div>
       <h1>Register</h1>
       <form onSubmit={handleRegister}>
         <input
@@ -34,6 +36,8 @@ const Register = () => {
         <button type="submit">Register</button>
       </form>
     </div>
+    </Layout>
+    
   );
 };
 
