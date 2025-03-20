@@ -122,7 +122,9 @@ class TaskController {
       const userId = req.session.userId; // Obtém o userId da sessão
 
       if (!userId) {
-        return res.status(403).json({ error: 'Usuário não autenticado' });
+        return res.status(403).json({ error: 'Usuário não autenticado',
+          ID: userId
+         });
       }
 
       const tasks = await Task.findAll({
