@@ -95,10 +95,11 @@ class UserController {
                 return res.status(401).json({ error: 'Senha incorreta' });
             }
 
-            // Set the session
+            // Armazena o userId na sessão
             req.session.userId = user.id;
+            console.log('Sessão criada para userId:', req.session.userId);
 
-            return res.status(200).json({ message: 'Login bem-sucedido' });
+            return res.json({ message: 'Login bem-sucedido', userId: user.id });
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }

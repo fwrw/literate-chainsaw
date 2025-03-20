@@ -4,23 +4,25 @@ const router = express.Router();
 const TaskController = require('./controllers/TaskController');
 const TagController = require('./controllers/TagController');
 const UserController = require('./controllers/UserController');
-const isAuthenticated = require('./middleware/auth'); // Ensure this import is correct
+const isAuthenticated = require('./middleware/auth');
+const checkRole = require('./middleware/checkRole') // Ensure this import is correct
 
 // Rotas para Usuários
-router.get('/users', UserController.index); // Listar todos os usuários
-router.post('/users', UserController.store); // Criar um novo usuário
+router.get('/users',  UserController.index); // Listar todos os usuários
+router.post('/register', UserController.store); // Criar um novo usuário
 router.post('/login', UserController.login); // Login de usuário
 router.put('/users/:id', isAuthenticated, UserController.update); // Atualizar um usuário
 router.delete('/delete-account', isAuthenticated, UserController.delete); // Deletar um usuário
 router.patch('/users/:id/password', isAuthenticated, UserController.updatePassword); // Atualizar a senha de um usuário
 
 // Rotas para Tarefas
-router.get('/tasks', TaskController.index); // Listar todas as tarefas
-router.post('/tasks', TaskController.store); // Criar uma nova tarefa
+router.get('/allTasks',  TaskController.index); // Listar todas as tarefas
+
+router.get('/tasks', isAuthenticated, TaskController.getUserTasks); // Listar todas as tarefas
+
+router.post('/tasks', isAuthenticated, TaskController.store); // Criar uma nova tarefa
 router.put('/tasks/:id', isAuthenticated, TaskController.update); // Atualizar uma tarefa
 router.delete('/tasks/:id', isAuthenticated, TaskController.delete); // Deletar uma tarefa
-// router.get('/users/:id/tasks', isAuthenticated, UserController.getUserTasks); // Listar todas as tarefas de um usuário
-router.get('/users/:id/tasks', UserController.getUserTasks); // Listar todas as tarefas de um usuário
 
 // Rotas para Tags
 router.get('/tags', isAuthenticated, TagController.index); // Listar todas as tags

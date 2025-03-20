@@ -119,10 +119,10 @@ class TaskController {
   // Listar todas as tarefas de um usuário específico
   async getUserTasks(req, res) {
     try {
-      const { userId } = req.params;
+      const userId = req.session.userId; // Obtém o userId da sessão
 
-      if (userId == null) {
-        return res.status(400).json({ error: "cade o user paizao" });
+      if (!userId) {
+        return res.status(403).json({ error: 'Usuário não autenticado' });
       }
 
       const tasks = await Task.findAll({
@@ -130,23 +130,21 @@ class TaskController {
         include: [
           {
             model: Tag,
+            as: 'Tags',
+            attributes: ['id', 'name', 'color'],
             through: { attributes: [] }, // Não inclui os atributos da tabela de junção
-            attributes: ['id', 'name', 'color'], // Inclui apenas os atributos necessários das tags
           },
         ],
       });
 
       if (!tasks.length) {
-        return res.status(404).json({
-          error: "Nenhuma tarefa encontrada para este usuário",
-        });
+        return res.status(404).json({ error: 'Nenhuma tarefa encontrada para este usuário' });
       }
 
       return res.json(tasks);
     } catch (error) {
-      return res.status(500).json({
-        error: "Erro ao buscar tarefas do usuário",
-      });
+      console.error('Erro ao buscar tarefas:', error);
+      return res.status(500).json({ error: 'Erro ao buscar tarefas' });
     }
   }
 
