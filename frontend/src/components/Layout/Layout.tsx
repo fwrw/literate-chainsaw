@@ -35,9 +35,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 {isAuthenticated ? 'Tasks' : 'Login'} 
                 </NavButton>
               </li>
+
+              {location.pathname === '/tasks' && (
+                <li>
+                  <NavButton active={(location.pathname as string) === '/new-task'} to="/new-task">
+                    New Task
+                  </NavButton>
+                </li>
+              )}
+
               <li>
                 <NavButton onClick={handleLogout}>
-                  Logout
+                  <span className='text-red-800'>Logout</span>
                 </NavButton>
               </li>
             </>

@@ -1,0 +1,13 @@
+{
+  "name": "todo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && node --watch ./src/",
+    "client": "cd frontend && npm run dev"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

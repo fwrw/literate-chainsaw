@@ -1,9 +1,10 @@
+import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 interface NavButtonProps {
   active?: boolean;
   to?: string;
-  children: string;
+  children: ReactNode | string;
   onClick?: () => void; // Função opcional para clique
 }
 

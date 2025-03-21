@@ -20,9 +20,9 @@ router.get('/allTasks',  TaskController.index); // Listar todas as tarefas
 
 router.get('/tasks', isAuthenticated, TaskController.getUserTasks); // Listar todas as tarefas
 
-router.post('/tasks', isAuthenticated, TaskController.store); // Criar uma nova tarefa
+router.post('/tasks', TaskController.store); // Criar uma nova tarefa
 router.put('/tasks/:id', isAuthenticated, TaskController.update); // Atualizar uma tarefa
-router.delete('/tasks/:id', isAuthenticated, TaskController.delete); // Deletar uma tarefa
+router.delete('/tasks', isAuthenticated, TaskController.delete); // Deletar uma tarefa
 
 // Rotas para Tags
 router.get('/tags', isAuthenticated, TagController.index); // Listar todas as tags
