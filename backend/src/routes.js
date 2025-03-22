@@ -19,28 +19,25 @@ router.patch('/users/:id/password', isAuthenticated, UserController.updatePasswo
 router.get('/allTasks',  TaskController.index); // Listar todas as tarefas
 
 router.get('/tasks', isAuthenticated, TaskController.getUserTasks); // Listar todas as tarefas
+router.get('/tasks/:id', isAuthenticated, TaskController.show); // Listar todas as tarefas
 
-router.post('/tasks', TaskController.store); // Criar uma nova tarefa
-router.put('/tasks/:id', isAuthenticated, TaskController.update); // Atualizar uma tarefa
-router.delete('/tasks', isAuthenticated, TaskController.delete); // Deletar uma tarefa
+
+router.post('/tasks', isAuthenticated, TaskController.store); // Criar uma nova tarefa
+router.put('/update-task/', isAuthenticated, TaskController.update); // Atualizar uma tarefa
+router.delete('/delete-task', isAuthenticated, TaskController.delete); // Deletar uma tarefa
+router.patch('/tasks/:id', isAuthenticated, TaskController.changeTaskStatus); // alterna o status da tarefa
 
 // Rotas para Tags
-router.get('/tags', isAuthenticated, TagController.index); // Listar todas as tags
+router.get('/tags', isAuthenticated, TagController.getUserTags); // Listar todas as tags
+router.get('/tags/:id', isAuthenticated, TagController.show); // Listar todas as tags
+
 router.post('/tags', isAuthenticated, TagController.store); // Criar uma nova tag
-router.put('/tags/:id', isAuthenticated, TagController.update); // Atualizar uma tag
-router.delete('/tags/:id', isAuthenticated, TagController.delete); // Deletar uma tag
-router.patch('/tasks/:id', isAuthenticated, TaskController.changeTaskStatus); // alterna o status da tarefa
-router.get('/user/tags', isAuthenticated, TagController.getUserTags); // Listar todas as tags de um usuário
+router.put('/update-tag/', isAuthenticated, TagController.update); // Atualizar uma tag
+router.delete('/delete-tag/', isAuthenticated, TagController.delete); // Deletar uma tag
+router.patch('/change-tag-name/', isAuthenticated, TagController.changeTagName); 
+router.patch('/change-tag-color/', isAuthenticated, TagController.changeTagColor); 
 
 
-
-router.get('/login', (req, res) => {
-  res.json({ message: 'Login Page' });
-});
-
-router.get('/register', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/register.html'));
-});
 
 // Root route
 router.get('/', (req, res) => {
@@ -65,6 +62,18 @@ router.get('/user-tags', isAuthenticated, (req, res) => {
 router.get('/user-info', isAuthenticated, async (req, res) => {
   const user = await UserController.getUserById(req.session.userId);
   res.json(user);
+});
+
+
+router.get('/session', (req, res) => {
+  if (req.session && req.session.userId) {
+    return res.json({
+      userId: req.session.userId,
+      message: 'Sessão ativa',
+    });
+  } else {
+    return res.status(401).json({ error: 'Usuário não autenticado' });
+  }
 });
 
 module.exports = router;

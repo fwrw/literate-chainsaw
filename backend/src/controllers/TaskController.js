@@ -16,8 +16,9 @@ class TaskController {
   // Criar uma nova tarefa
   async store(req, res) {
     try {
-      const { title, status, priority, description, tags = [], userId } = req.body;
+      const { title, status = 'in progress', priority, description, tags = [] } = req.body;
 
+      const userId = req.session.userId; // Obtém o userId da sessão
       const user = await User.findByPk(userId);
 
       if (!user) {
@@ -57,34 +58,36 @@ class TaskController {
 
   async update(req, res) {
     try {
-      const { id } = req.params;
-      const { title, status, priority, description, tags = [] } = req.body;
+      const { id, title, status, priority, description, tags = [] } = req.body;
+      const userId = req.session.userId;
 
       const task = await Task.findByPk(id);
+
       if (!task) {
         return res.status(404).json({ error: "Tarefa não encontrada" });
       }
 
+      // Verifica se o userId da sessão corresponde ao userId da tarefa
+      if (task.userId !== userId) {
+        return res.status(403).json({ error: "Acesso negado" });
+      }
+
       await task.update({ title, status, priority, description });
 
-      // Update tags
+      // Atualiza as tags
       if (tags.length > 0) {
         const tagInstances = await Promise.all(
           tags.map(async (tag) => {
-            // Verifica se a tag já existe
             const [tagInstance, created] = await Tag.findOrCreate({
-              where: { name: tag.name, userId: task.userId },
-              defaults: { userId: task.userId, color: tag.color || '#000000' }
+              where: { name: tag.name, userId },
+              defaults: { userId, color: tag.color || "#000000" },
             });
 
-            // Se a tag já existia e a cor não foi fornecida, mantém a cor existente
             if (!created && !tag.color) {
-              tagInstance.color = tagInstance.color; // Mantém a cor existente
-            } else if (tag.color) {
               tagInstance.color = tag.color; // Atualiza a cor se fornecida
+              await tagInstance.save(); // Salva a tag com a cor correta
             }
 
-            await tagInstance.save(); // Salva a tag com a cor correta
             return tagInstance;
           })
         );
@@ -103,12 +106,18 @@ class TaskController {
   async delete(req, res) {
     try {
       const { taskId } = req.body;
-  
+      const userId = req.session.userId;
+
       const task = await Task.findByPk(taskId);
       if (!task) {
-        return res.status(404).json({ request: req.body, error: "Tarefa não encontrada" });
+        return res.status(404).json({ error: "Tarefa não encontrada" });
       }
-  
+
+      // Verifica se o userId da sessão corresponde ao userId da tarefa
+      if (task.userId !== userId) {
+        return res.status(403).json({ error: "Acesso negado" });
+      }
+
       await task.destroy();
       return res.json({ message: "Tarefa deletada com sucesso" });
     } catch (error) {
@@ -120,11 +129,8 @@ class TaskController {
   async getUserTasks(req, res) {
     try {
       const userId = req.session.userId; // Obtém o userId da sessão
-
       if (!userId) {
-        return res.status(403).json({ error: 'Usuário não autenticado',
-          ID: userId
-         });
+        return res.status(403).json({ error: 'Usuário não autenticado' });
       }
 
       const tasks = await Task.findAll({
@@ -147,6 +153,37 @@ class TaskController {
     } catch (error) {
       console.error('Erro ao buscar tarefas:', error);
       return res.status(500).json({ error: 'Erro ao buscar tarefas' });
+    }
+  }
+
+  async show(req, res) {
+    try {
+      const { id } = req.params;
+      const userId = req.session.userId;
+
+      const task = await Task.findByPk(id, {
+        include: [
+          {
+            model: Tag,
+            as: "Tags",
+            attributes: ["id", "name", "color"],
+            through: { attributes: [] },
+          },
+        ],
+      });
+
+      if (!task) {
+        return res.status(404).json({ error: "Tarefa não encontrada" });
+      }
+
+      // Verifica se o userId da sessão corresponde ao userId da tarefa
+      if (task.userId !== userId) {
+        return res.status(403).json({ error: "Acesso negado" });
+      }
+
+      return res.json(task);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao buscar tarefa" });
     }
   }
 
@@ -173,26 +210,32 @@ class TaskController {
   async changeTaskStatus(req, res) {
     try {
       const { id } = req.params;
+      const userId = req.session.userId;
 
       const task = await Task.findByPk(id);
+
       if (!task) {
         return res.status(404).json({ error: "Tarefa não encontrada" });
       }
 
-      if (task.status == 'in progress') {
-        await task.update({ status: 'finished' });
+      // Verifica se o userId da sessão corresponde ao userId da tarefa
+      if (task.userId !== userId) {
+        return res.status(403).json({ error: "Acesso negado" });
+      }
+
+      if (task.status === "in progress") {
+        await task.update({ status: "finished" });
         return res.json(task);
       }
 
-      if (task.status == 'finished') {
-        await task.update({ status: 'in progress' });
+      if (task.status === "finished") {
+        await task.update({ status: "in progress" });
         return res.json(task);
       }
 
       return res.status(400).json({ error: "Status inválido" });
-      
     } catch (error) {
-      return res.status(500).json({ error: "Erro ao finalizar tarefa" });
+      return res.status(500).json({ error: "Erro ao alterar status da tarefa" });
     }
   }
 }

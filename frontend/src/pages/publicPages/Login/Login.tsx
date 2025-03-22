@@ -16,6 +16,7 @@ const Login = () => {
 
       // Armazena o userId no localStorage
       localStorage.setItem('userId', response.data.userId);
+      localStorage.setItem('role', response.data.role);
 
       // Redireciona para a página de tarefas
       navigate('/tasks');

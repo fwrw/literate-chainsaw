@@ -1,7 +1,7 @@
-import { ReactNode, useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import NavButton from '../NavButton/NavButton';
-import useAuth from '../../hooks/useAuth';
+import { ReactNode } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import NavButton from "../NavButton/NavButton";
+import useAuth from "../../hooks/useAuth";
 
 interface LayoutProps {
   children: ReactNode;
@@ -10,11 +10,11 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const {isAuthenticated, logout} = useAuth();
+  const { isAuthenticated, role, logout } = useAuth(); // Obtém a role do usuário
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
@@ -22,8 +22,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <nav className="bg-gray-800 p-4 h-24 flex items-center justify-between">
         <ul className="flex space-x-4">
           <li>
-            <NavButton active={location.pathname === '/'} to="/">
-              Home
+            <NavButton active={location.pathname === "/"} to="/">
+              Home 
             </NavButton>
           </li>
         </ul>
@@ -31,39 +31,63 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {isAuthenticated ? (
             <>
               <li>
-                <NavButton active={location.pathname === '/tasks'} to="/tasks">
-                {isAuthenticated ? 'Tasks' : 'Login'} 
+                <NavButton active={location.pathname === "/tasks"} to="/tasks">
+                  Tasks
                 </NavButton>
               </li>
 
-              {location.pathname === '/tasks' && (
-                <li>
-                  <NavButton active={(location.pathname as string) === '/new-task'} to="/new-task">
-                    New Task
-                  </NavButton>
-                </li>
+              {role === "admin" && (
+                <>
+                  <li>
+                    <NavButton
+                      active={location.pathname === "/admin/users"}
+                      to="/admin/users"
+                    >
+                      Users
+                    </NavButton>
+                  </li>
+                  <li>
+                    <NavButton
+                      active={location.pathname === "/admin/tasks"}
+                      to="/admin/tasks"
+                    >
+                      All Tasks
+                    </NavButton>
+                  </li>
+                  <li>
+                    <NavButton
+                      active={location.pathname === "/admin/tags"}
+                      to="/admin/tags"
+                    >
+                      All Tags
+                    </NavButton>
+                  </li>
+                </>
               )}
 
               <li>
                 <NavButton onClick={handleLogout}>
-                  <span className='text-red-800'>Logout</span>
+                  <span className="text-red-800">Logout</span>
                 </NavButton>
               </li>
             </>
           ) : (
             <>
               <li>
-                <NavButton active={location.pathname === '/login'} to="/login">
+                <NavButton active={location.pathname === "/login"} to="/login">
                   Login
                 </NavButton>
               </li>
               <li>
-                <NavButton active={location.pathname === '/register'} to="/register">
+                <NavButton
+                  active={location.pathname === "/register"}
+                  to="/register"
+                >
                   Register
                 </NavButton>
               </li>
               <li>
-                <NavButton active={location.pathname === '/about'} to="/about">
+                <NavButton active={location.pathname === "/about"} to="/about">
                   About
                 </NavButton>
               </li>
