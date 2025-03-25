@@ -105,10 +105,10 @@ class TaskController {
 
   async delete(req, res) {
     try {
-      const { taskId } = req.body;
+      const { id } = req.body;
       const userId = req.session.userId;
 
-      const task = await Task.findByPk(taskId);
+      const task = await Task.findByPk(id);
       if (!task) {
         return res.status(404).json({ error: "Tarefa não encontrada" });
       }

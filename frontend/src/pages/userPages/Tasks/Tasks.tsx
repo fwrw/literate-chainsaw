@@ -112,6 +112,7 @@ const Tasks = () => {
                       status={task.status}
                       Tags={task.Tags}
                       onDelete={handleDelete}
+                      
                     />
                   ))}
               </Masonry>
