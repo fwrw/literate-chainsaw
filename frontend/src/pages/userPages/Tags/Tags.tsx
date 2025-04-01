@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Tag } from "../../../components";
+import Tag from "../../../components/Tag/Tag";
 import PageHeader from "../PageHeader";
 import Layout from "../../../components/Layout/Layout";
-import api from "../../../services/api";
+import { fetchTags, deleteTag } from "../../../services/tagService";
 
 interface TagData {
   id: number;
@@ -17,10 +17,10 @@ const Tags = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchTags = async () => {
+    const loadTags = async () => {
       try {
-        const response = await api.get("/tags");
-        setTags(response.data);
+        const tags = await fetchTags();
+        setTags(tags);
       } catch (error) {
         console.error("Error fetching tags:", error);
       } finally {
@@ -28,15 +28,24 @@ const Tags = () => {
       }
     };
 
-    fetchTags();
+    loadTags();
   }, []);
 
-  const handleDelete = (tagId: number) => {
-    setTags((prevTags) => prevTags.filter((tag) => tag.id !== tagId));
+  const handleDelete = async (tagId: number) => {
+    try {
+      await deleteTag(tagId); // Chama o serviço para deletar a tag
+      setTags((prevTags) => prevTags.filter((tag) => tag.id !== tagId)); // Atualiza o estado local
+    } catch (error) {
+      console.error("Error deleting tag:", error);
+    }
+  };
+
+  const handleUpdate = (tagId: number) => {
+    navigate(`/update-tag/${tagId}`); // Redireciona para a página de atualização
   };
 
   const handleCreateTag = () => {
-    navigate("/new-tag");
+    navigate("/new-tag"); // Redireciona para a página de criação
   };
 
   return (
@@ -50,11 +59,12 @@ const Tags = () => {
             <div className="grid sm:grid-cols-4 sm:gap-6 grid-cols-2 gap-2 w-full max-w-4xl">
               {tags.map((tag) => (
                 <Tag
-                    id={tag.id}
-                    key={tag.id}
-                    name={tag.name}
-                    color={tag.color}
-                    onDelete={handleDelete}
+                  id={tag.id}
+                  key={tag.id}
+                  name={tag.name}
+                  color={tag.color}
+                  onDelete={handleDelete} // Passa o callback de exclusão
+                  onUpdate={handleUpdate} // Passa o callback de atualização
                 />
               ))}
             </div>

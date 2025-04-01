@@ -1,25 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Masonry from "react-masonry-css"; // Importa o componente Masonry
+import Masonry from "react-masonry-css";
 import PageHeader from "../PageHeader";
 import Layout from "../../../components/Layout/Layout";
 import Task from "../../../components/Task/Task";
-import api from "../../../services/api";
 
-interface Tag {
-  id: number;
-  name: string;
-  color: string;
-}
-
-interface TaskData {
-  id: number;
-  title: string;
-  description: string;
-  priority: number;
-  status: "in progress" | "finished";
-  Tags: Tag[];
-}
+import { fetchTasks, TaskData } from "../../../services/taskService";
 
 const Tasks = () => {
   const [tasks, setTasks] = useState<TaskData[]>([]); // Todas as tasks
@@ -28,19 +14,11 @@ const Tasks = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchTasks = async () => {
+    const loadTasks = async () => {
       try {
-        const response = await api.get("/tasks");
-        const tasksWithTags = response.data.map((task: any) => ({
-          ...task,
-          Tags: task.Tags.map((tag: any) => ({
-            id: tag.id,
-            name: tag.name,
-            color: tag.color,
-          })),
-        }));
-        setTasks(tasksWithTags);
-        setFilteredTasks(tasksWithTags); // Inicialmente, todas as tasks são exibidas
+        const tasks = await fetchTasks();
+        setTasks(tasks);
+        setFilteredTasks(tasks); // Inicialmente, todas as tasks são exibidas
       } catch (error) {
         console.error("Error fetching tasks:", error);
       } finally {
@@ -48,13 +26,48 @@ const Tasks = () => {
       }
     };
 
-    fetchTasks();
+    loadTasks();
   }, []);
 
-  const handleDelete = (taskId: number) => {
+  const handleDeleteTask = (taskId: number) => {
     setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
     setFilteredTasks((prevTasks) =>
       prevTasks.filter((task) => task.id !== taskId)
+    );
+  };
+
+  const handleUpdateTaskStatus = (
+    taskId: number,
+    newStatus: "in progress" | "finished",
+  ) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId ? { ...task, status: newStatus } : task
+      )
+    );
+    setFilteredTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId ? { ...task, status: newStatus } : task
+      )
+    );
+  };
+
+  const handleTaskUpdate = (
+    updatedTask: { id: number; status: "in progress" | "finished" },
+  ) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === updatedTask.id
+          ? { ...task, status: updatedTask.status }
+          : task
+      )
+    );
+    setFilteredTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === updatedTask.id
+          ? { ...task, status: updatedTask.status }
+          : task
+      )
     );
   };
 
@@ -89,38 +102,37 @@ const Tasks = () => {
   return (
     <Layout>
       <div className="flex flex-col items-center min-h-screen p-4">
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
+        {loading ? <p>Loading...</p> : (
           <>
             <PageHeader onCreate={handleCreateTask} onSearch={handleSearch} />
-            {filteredTasks.length > 0 ? (
-              <Masonry
-                breakpointCols={breakpointColumnsObj}
-                className="flex w-full max-w-4xl gap-2"
-                columnClassName="masonry-column"
-              >
-                {filteredTasks
-                  .sort((a, b) => b.priority - a.priority)
-                  .map((task) => (
-                    <Task
-                      key={task.id}
-                      id={task.id}
-                      title={task.title}
-                      description={task.description}
-                      priority={task.priority}
-                      status={task.status}
-                      Tags={task.Tags}
-                      onDelete={handleDelete}
-                      
-                    />
-                  ))}
-              </Masonry>
-            ) : (
-              <p className="text-lg text-gray-700 mt-4">
-                Nenhuma task encontrada para a tag pesquisada.
-              </p>
-            )}
+            {filteredTasks.length > 0
+              ? (
+                <Masonry
+                  breakpointCols={breakpointColumnsObj}
+                  className="flex w-full max-w-4xl gap-2"
+                  columnClassName="masonry-column"
+                >
+                  {filteredTasks
+                    .sort((a, b) => b.priority - a.priority)
+                    .map((task) => (
+                      <Task
+                        key={task.id}
+                        id={task.id}
+                        title={task.title}
+                        description={task.description}
+                        priority={task.priority}
+                        status={task.status}
+                        Tags={task.Tags}
+                        onTaskUpdate={handleTaskUpdate}
+                      />
+                    ))}
+                </Masonry>
+              )
+              : (
+                <p className="text-lg text-gray-700 mt-4">
+                  Nenhuma task encontrada para a tag pesquisada.
+                </p>
+              )}
           </>
         )}
       </div>

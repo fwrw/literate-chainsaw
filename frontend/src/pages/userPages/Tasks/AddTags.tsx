@@ -48,10 +48,12 @@ const AddTags = () => {
 
   const handleSaveTags = async () => {
     try {
-      const formattedTags = tags.map((tagId) => {
-        const tag = userTags.find((t) => t.id === tagId);
-        return { name: tag?.name || "", color: tag?.color || "#000000" };
-      });
+      const formattedTags = tags
+        .filter((tagId) => tagId !== 0) // Filtra inputs sem valor selecionado
+        .map((tagId) => {
+          const tag = userTags.find((t) => t.id === tagId);
+          return { name: tag?.name || "", color: tag?.color || "#000000" };
+        });
 
       await api.put("/update-task/", {
         id,
