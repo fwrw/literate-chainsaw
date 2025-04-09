@@ -10,12 +10,17 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, role, logout } = useAuth(); // Obtém a role do usuário
+  const { isAuthenticated, role, logout, loading } = useAuth(); // Inclui o estado de carregamento
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
+
+  if (loading) {
+    // Exibe um indicador de carregamento enquanto verifica a autenticação
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
@@ -23,7 +28,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <ul className="flex space-x-4">
           <li>
             <NavButton active={location.pathname === "/"} to="/">
-              Home 
+              Home
             </NavButton>
           </li>
         </ul>
