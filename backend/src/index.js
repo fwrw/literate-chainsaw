@@ -9,19 +9,21 @@ const { sequelize } = require('./models');
 
 const app = express();
 const allowedOrigins = [
-  'http://localhost:5173', // Seu frontend
-  'http://127.0.0.1:5173'
+  'http://localhost:8080', // Frontend rodando localmente
+  'http://127.0.0.1:8080'  // Alternativa para localhost
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
+    console.log('Origem da requisição:', origin); // Log da origem
     if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
+      callback(null, true); // Permite a origem
     } else {
-      callback(new Error('Bloqueado por CORS'));
+      console.error('Origem bloqueada por CORS:', origin); // Log da origem bloqueada
+      callback(new Error('Bloqueado por CORS')); // Bloqueia a origem
     }
   },
-  credentials: true // Permite cookies e headers de autenticação
+  credentials: true // Permite o envio de cookies e headers de autenticação
 };
 
 app.use(cors(corsOptions));

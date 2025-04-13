@@ -13,10 +13,8 @@ interface SandwichButtonProps {
 }
 
 const SandwichButton: React.FC<SandwichButtonProps> = ({
-  id,
   type,
   addTag = true,
-  updateRoute,
   onDelete,
   onUpdate,
   onAddTag,

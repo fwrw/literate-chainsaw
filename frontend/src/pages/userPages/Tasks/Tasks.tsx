@@ -29,28 +29,6 @@ const Tasks = () => {
     loadTasks();
   }, []);
 
-  const handleDeleteTask = (taskId: number) => {
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
-    setFilteredTasks((prevTasks) =>
-      prevTasks.filter((task) => task.id !== taskId)
-    );
-  };
-
-  const handleUpdateTaskStatus = (
-    taskId: number,
-    newStatus: "in progress" | "finished",
-  ) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task
-      )
-    );
-    setFilteredTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task
-      )
-    );
-  };
 
   const handleTaskUpdate = (
     updatedTask: { id: number; status: "in progress" | "finished" },
