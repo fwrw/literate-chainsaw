@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -32,7 +34,7 @@ app.use(express.json());
 
 // Set up session middleware
 app.use(session({
-  secret: 'eitakimassa', // Replace with a strong secret key
+  secret: process.env.SESSION_SECRET, // Replace with a strong secret key
   resave: false,
   saveUninitialized: true,
   cookie: { secure: false } // Set to true if using HTTPS
