@@ -23,6 +23,8 @@ router.get('/tasks/:id', isAuthenticated, TaskController.show); // Listar todas 
 
 
 router.post('/tasks', isAuthenticated, TaskController.store); // Criar uma nova tarefa
+
+router.patch('/update-tags/', isAuthenticated, TaskController.updateTags); // Atualizar as tags de uma tarefa
 router.put('/update-task/', isAuthenticated, TaskController.update); // Atualizar uma tarefa
 router.delete('/delete-task', isAuthenticated, TaskController.delete); // Deletar uma tarefa
 router.patch('/tasks/:id', isAuthenticated, TaskController.changeTaskStatus); // alterna o status da tarefa

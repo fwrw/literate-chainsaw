@@ -93,13 +93,56 @@ class TaskController {
         );
 
         await task.setTags(tagInstances.map(tag => tag.id));
-      } else {
-        await task.setTags([]); // Remove all tags if no tags are provided
-      }
+      } 
+
 
       return res.json(task);
     } catch (error) {
       return res.status(500).json({ error: "Erro ao atualizar tarefa" });
+    }
+  }
+
+  // Atualizar as tags de uma tarefa
+  async updateTags(req, res) {
+    try {
+      const { id, tags = [] } = req.body;
+      const userId = req.session.userId;
+
+      const task = await Task.findByPk(id, {
+        include: [{ model: Tag, as: "Tags" }],
+      });
+
+      if (!task) {
+        return res.status(404).json({ error: "Tarefa não encontrada" });
+      }
+
+      // Verifica se o userId da sessão corresponde ao userId da tarefa
+      if (task.userId !== userId) {
+        return res.status(403).json({ error: "Acesso negado" });
+      }
+
+      // Create or find the new tags
+      const newTagInstances = await Promise.all(
+        tags.map(async (tag) => {
+          const [tagInstance] = await Tag.findOrCreate({
+            where: { name: tag.name, userId },
+            defaults: { userId, color: tag.color || "#000000" },
+          });
+          return tagInstance;
+        })
+      );
+
+      // Combine existing tags with new tags
+      const existingTags = await task.getTags();
+      const allTags = [...existingTags, ...newTagInstances];
+
+      // Associate all tags with the task
+      await task.setTags(allTags.map(tag => tag.id));
+
+      return res.json(task);
+    } catch (error) {
+      console.error("Erro ao atualizar tags da tarefa:", error);
+      return res.status(500).json({ error: "Erro ao atualizar tags da tarefa" });
     }
   }
 

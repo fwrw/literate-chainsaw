@@ -55,7 +55,7 @@ const AddTags = () => {
           return { name: tag?.name || "", color: tag?.color || "#000000" };
         });
 
-      await api.put("/update-task/", {
+      await api.patch("/update-tags/", {
         id,
         title: task!.title, // Use o operador "!" para garantir que task não é null
         status: "in progress",
